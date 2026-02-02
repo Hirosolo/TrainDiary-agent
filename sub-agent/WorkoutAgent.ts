@@ -3,7 +3,7 @@ import { LlmAgent, FunctionTool } from '@google/adk';
 import { withAuthToken, getAuthToken, extractAuthToken, DEFAULT_TOKEN } from './Tools/auth';
 import { createWorkoutSessionTool } from './Tools/WorkoutTools/CreateSession';
 import { addExercisesToSessionTool } from './Tools/WorkoutTools/AddExercisesToSession';
-import { logExercisesTool } from './Tools/WorkoutTools/LogExercises';
+import { logExercisesTool } from './Tools/WorkoutTools/ExerciseDetails/LogExercises';
 import { API_BASE } from './Tools/config';
 
 
@@ -120,32 +120,7 @@ async function deleteWorkoutData(
       'Workout data deleted successfully (session / detail / log).',
   };
 }
-async function searchExercise(params: z.infer<typeof searchExerciseParamsSchema>): Promise<{ exercise_id?: number; exercises?: Array<{ id: number; name: string }>; message: string }> {
-  const { authToken, rest } = extractAuthToken(params);
-  const token = getAuthToken(authToken);
-  const res = await fetch(`${API_BASE}/api/exercises?name=${rest.name}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-  const data = await res.json();
-  if (!res.ok || !Array.isArray(data.data)) {
-    return { message: 'Failed to search for exercises.' };
-  }
-  if (data.data.length === 1) {
-    return {
-      exercise_id: data.data[0].exercise_id,
-      message: `Found one exercise: ${data.data[0].name}. Adding to session.`
-    };
-  } else if (data.data.length > 1) {
-    return {
-      exercises: data.data.map((ex: any) => ({ id: ex.exercise_id, name: ex.name })),
-      message: `Multiple exercises found. Please specify the full name: ${data.data.map((ex: any) => ex.name).join(', ')}`
-    };
-  } else {
-    return { message: 'No exercises found matching that name.' };
-  }
-}
+
 /* =========================
  * FunctionTool instances
  * ========================= */
@@ -162,13 +137,7 @@ export const completeWorkoutTool = new FunctionTool({
   execute: completeSet,
 });
 
-export const completeSessionTool = new FunctionTool({
-  name: 'completeWorkoutSession',
-  description:
-    'Marks a workout session as completed after all exercises have logs (PUT /workout-sessions).',
-  parameters: completeSessionParamsSchema,
-  execute: completeSession,
-});
+
 
 export const deleteWorkoutDataTool = new FunctionTool({
   name: 'deleteWorkoutData',
@@ -178,12 +147,6 @@ export const deleteWorkoutDataTool = new FunctionTool({
   execute: deleteWorkoutData,
 });
 
-export const searchExerciseTool = new FunctionTool({
-  name: 'searchExercise',
-  description: 'Searches for exercises by name. If one match, adds directly; if multiple, asks user to clarify.',
-  parameters: searchExerciseParamsSchema,
-  execute: searchExercise,
-});
 
 /* =========================
  * WorkoutAgent definition

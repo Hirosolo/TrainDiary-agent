@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import {FunctionTool } from '@google/adk';
-import { withAuthToken, getAuthToken, extractAuthToken, DEFAULT_TOKEN } from '../auth';
-import { API_BASE } from '../config';
+import { withAuthToken, getAuthToken, extractAuthToken, DEFAULT_TOKEN } from '../../auth';
+import { API_BASE } from '../../config';
 
 const addExercisesParamsSchema = withAuthToken(z.object({
   session_id: z.string().describe('Existing workout session_id to add exercises to.'),

@@ -1,18 +1,11 @@
 import { z } from 'zod';
 import { FunctionTool } from '@google/adk';
-import { withAuthToken, getAuthToken, extractAuthToken, DEFAULT_TOKEN } from '../auth';
-import { API_BASE } from '../config'; 
+import { withAuthToken, getAuthToken, extractAuthToken, DEFAULT_TOKEN } from '../../auth';
+import { API_BASE } from '../../config'; 
 
 const logExercisesParamsSchema = withAuthToken(z.object({
-  session_detail_id: z.string().describe('Existing workout session_detail_id to log exercises sets to.'),
-  sets: z.array(
-    z.object({
-      set_id: z.number().int().describe('Set ID to log.'),
-      actual_reps: z.number().int().describe('Actual number of reps performed in this set.'),
-      weight_kg: z.number().optional().describe('Optional weight in kg used for this set.'),
-      duration_seconds: z.number().int().optional().describe('Optional duration in seconds (for time-based exercises).'),
-    })
-  ).nonempty().describe('List of sets to log for the exercise.'),
+  set_id: z.string().describe('Existing workout session_detail_id to log exercises sets to.'),
+  actual_rep: z.number().int().describe('Actual number of reps performed.'),
   
 }));
 
