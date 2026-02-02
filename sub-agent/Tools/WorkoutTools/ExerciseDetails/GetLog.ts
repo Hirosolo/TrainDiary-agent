@@ -7,7 +7,7 @@ const getLogParamsSchema = withAuthToken(z.object({
   session_detail_id: z.array(z.number().int()).describe('The IDs of the session details to retrieve logs for.'),
 }));
 
-async function getLog(params: z.infer<typeof getLogParamsSchema>,): Promise<{set_ids?: number[]; message: string; error?: string }> {
+async function getLog(params: z.infer<typeof getLogParamsSchema>,): Promise<{sets?: any[]; message: string; error?: string }> {
   const { authToken, rest } = extractAuthToken(params);
   const token = getAuthToken(authToken);
   console.log('getLog params:', rest);
@@ -29,9 +29,19 @@ async function getLog(params: z.infer<typeof getLogParamsSchema>,): Promise<{set
     };
   }
 
-  return {
-    set_ids: data.data?.map((item: any) => item.set_id) || [],
-    message: data.data.message ?? 'Log retrieved successfully.',
+return {
+  // Map every object in the data array to return all available fields
+    sets: (data.data || []).map((item: any) => ({
+      set_id: item.set_id,
+      session_detail_id: item.session_detail_id,
+      reps: item.reps,
+      weight_kg: item.weight_kg,
+      duration: item.duration,
+      notes: item.notes,
+      status: item.status
+  })),
+  // Access message from the root object (data.message)
+  message: data.message ?? 'Log retrieved successfully.',
   };
 }
 

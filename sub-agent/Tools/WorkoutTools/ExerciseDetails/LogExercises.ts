@@ -4,9 +4,6 @@ import { withAuthToken, getAuthToken, extractAuthToken } from '../../auth';
 import { API_BASE } from '../../config'; 
 
 const logExercisesParamsSchema = withAuthToken(z.object({
-  session_detail_id: z.string().describe('Existing workout session_detail_id to log exercises sets to.'),
-  exercise_id: z.number().int().describe('Exercise ID to log sets for.'),
-  exercise_type: z.string().describe('Type of exercise: strength or cardio.'),
   set_detail: z.array(
     z.object({
       set_id: z.string().describe('Existing workout set_id to log.'),

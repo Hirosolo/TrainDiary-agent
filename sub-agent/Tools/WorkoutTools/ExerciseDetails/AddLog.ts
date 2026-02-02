@@ -5,8 +5,6 @@ import { API_BASE } from '../../config';
 
 const addLogParamsSchema = withAuthToken(z.object({
   session_detail_id: z.string().describe('Existing workout session_detail_id to log exercises sets to.'),
-  exercise_id: z.number().int().describe('Exercise ID to log sets for.'),
-  exercise_type: z.string().describe('Type of exercise: strength or cardio.'),
   planned_detail: z.array(
     z.object({
       planned_rep: z.number().int().describe('Planned number of reps for the exercise.'),
@@ -21,7 +19,7 @@ const addLogParamsSchema = withAuthToken(z.object({
 async function addLogExercises(params: z.infer<typeof addLogParamsSchema>,): Promise<{set_ids?: number[] ;error?: string; message: string }> {
   const { authToken, rest } = extractAuthToken(params);
   const token = getAuthToken(authToken);
-  const res = await fetch(`${API_BASE}/ai/workout-sessions/logs`, {
+  const res = await fetch(`${API_BASE}/api/ai/sets`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -44,7 +42,7 @@ async function addLogExercises(params: z.infer<typeof addLogParamsSchema>,): Pro
 export const addLogExercisesTool = new FunctionTool({
   name: 'addLogExercises',
   description:
-    'Logs planned sets for an existing workout session (POST /workout-sessions with session_detail_id + sets).',
+    'Logs planned sets for an existing workout session (POST /api/ai/sets).',
   parameters: addLogParamsSchema,
   execute: addLogExercises,
 });
