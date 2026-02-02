@@ -5,7 +5,7 @@ import { API_BASE } from '../../config';
 
 const updateSessionStatusParamsSchema = withAuthToken(z.object({
   session_id: z.string().describe('Existing workout session_id to update.'),
-  user_id: z.number().int().describe('The ID of the user updating the workout session for authorization.'),
+  userId: z.number().int().describe('The ID of the user updating the workout session for authorization.'),
   status: z.string().describe('New status of the workout session (e.g., "complete", "incomplete").'),
   note: z.string().optional().describe('Optional note to add to the workout session.'),
 }));

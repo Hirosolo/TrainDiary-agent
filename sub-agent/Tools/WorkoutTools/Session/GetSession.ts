@@ -7,7 +7,7 @@ const user_id = 5;
 
 // Add authToken to schemas as an optional string
 const getSessionParamsSchema = withAuthToken(z.object({
-  user_id: z.number().int().default(user_id).describe('The ID of the user creating the workout session.'),
+  userId: z.number().int().default(user_id).describe('The ID of the user creating the workout session.'),
   month: z.string().optional().describe('The month (YYYY-MM) to retrieve workout sessions for.'),
   date: z.string().optional().describe('Optional specific date (YYYY-MM-DD) to filter workout sessions.'),
 }));

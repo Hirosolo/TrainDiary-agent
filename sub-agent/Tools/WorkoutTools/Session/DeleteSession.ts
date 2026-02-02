@@ -7,7 +7,7 @@ import { API_BASE } from '../../config';
 // Add authToken to schemas as an optional string
 const deleteSessionParamsSchema = withAuthToken(z.object({
   session_id: z.number().int().describe('The ID of the session to delete.'),
-  user_id: z.number().int().default(user_id).describe('The ID of the user deleting the workout session to authorize.'),
+  userId: z.number().int().default(user_id).describe('The ID of the user deleting the workout session to authorize.'),
 }));
 
 async function deleteSession(params: z.infer<typeof deleteSessionParamsSchema>,): Promise<{ message: string; error?: string }> {

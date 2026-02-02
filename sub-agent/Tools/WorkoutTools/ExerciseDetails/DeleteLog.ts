@@ -6,6 +6,7 @@ import { API_BASE } from '../../config';
 // Add authToken to schemas as an optional string
 const deleteLogParamsSchema = withAuthToken(z.object({
   set_id: z.number().int().describe('The ID of the set to delete.'),
+  userId: z.number().int().describe('The ID of the user performing the deletion for authorization.'),
 }));
 
 async function deleteLog(params: z.infer<typeof deleteLogParamsSchema>,): Promise<{ message: string; error?: string }> {
