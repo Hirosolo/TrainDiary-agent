@@ -15,7 +15,7 @@ async function createWorkoutSession(params: z.infer<typeof createSessionParamsSc
   const { authToken, rest } = extractAuthToken(params);
   const token = getAuthToken(authToken);
   console.log('createWorkoutSession params:', rest);
-  const res = await fetch(`${API_BASE}/ai/workout-sessions`, {
+  const res = await fetch(`${API_BASE}/api/ai/sessions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ async function createWorkoutSession(params: z.infer<typeof createSessionParamsSc
 export const createWorkoutSessionTool = new FunctionTool({
   name: 'createWorkoutSession',
   description:
-    'Creates a new workout session for a user (POST /ai/workout-sessions).',
+    'Creates a new workout session for a user (POST /api/ai/sessions).',
   parameters: createSessionParamsSchema,
   execute: createWorkoutSession,
 });

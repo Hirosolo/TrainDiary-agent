@@ -6,14 +6,14 @@ import { API_BASE } from '../../config';
 
 // Updated Schema to support multiple IDs
 const deleteSessionParamsSchema = withAuthToken(z.object({
-  session_ids: z.array(z.number().int()).describe('An array of session IDs to delete.'),
+  ids: z.array(z.number().int()).describe('An array of session IDs to delete.'),
 }));
 
 async function deleteSessions(params: z.infer<typeof deleteSessionParamsSchema>): Promise<{ message: string; error?: string }> {
   const { authToken, rest } = extractAuthToken(params);
   const token = getAuthToken(authToken);
   
-  const res = await fetch(`${API_BASE}/ai/workout-sessions`, {
+  const res = await fetch(`${API_BASE}/api/ai/sessions`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ async function deleteSessions(params: z.infer<typeof deleteSessionParamsSchema>)
 export const deleteWorkoutSessionTool = new FunctionTool({
   name: 'deleteWorkoutSession',
   description:
-    'Deletes a workout session for a user (DELETE /ai/workout-sessions).',
+    'Deletes a workout session for a user (DELETE /api/ai/sessions).',
   parameters: deleteSessionParamsSchema,
   execute: deleteSessions,
 });

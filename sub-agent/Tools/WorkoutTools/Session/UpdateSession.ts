@@ -4,7 +4,7 @@ import { withAuthToken, getAuthToken, extractAuthToken } from '../../auth';
 import { API_BASE } from '../../config'; 
 
 const updateSessionStatusParamsSchema = withAuthToken(z.object({
-  session_ids: z.array(z.number().int()).describe('An array of session IDs to update.'),
+  ids: z.array(z.number().int()).describe('An array of session IDs to update.'),
 }));
 async function updateSessionStatus(params: z.infer<typeof updateSessionStatusParamsSchema>): Promise<{ error?: string; message: string }> {
     const { authToken, rest } = extractAuthToken(params);   
@@ -35,7 +35,7 @@ async function updateSessionStatus(params: z.infer<typeof updateSessionStatusPar
 export const updateWorkoutSessionStatusTool = new FunctionTool({
   name: 'updateWorkoutSessionStatus',  
   description:
-    'Updates the status and optional note of an existing workout session (PUT /ai/workout-sessions).',
+    'Updates the status and optional note of an existing workout session (PUT /api/ai/sessions).',
   parameters: updateSessionStatusParamsSchema,
   execute: updateSessionStatus,
 });

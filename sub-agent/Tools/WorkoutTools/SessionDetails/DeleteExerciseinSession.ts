@@ -10,7 +10,7 @@ async function deleteExercisesFromSession(params: z.infer<typeof deleteExercises
   const { authToken, rest } = extractAuthToken(params);
   const token = getAuthToken(authToken);
 
-  const res = await fetch(`${API_BASE}/ai/workout-sessions/exercises`, {
+  const res = await fetch(`${API_BASE}/api/ai/session-details`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
