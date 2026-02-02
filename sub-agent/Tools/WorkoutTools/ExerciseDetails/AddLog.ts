@@ -3,26 +3,26 @@ import { FunctionTool } from '@google/adk';
 import { withAuthToken, getAuthToken, extractAuthToken } from '../../auth';
 import { API_BASE } from '../../config'; 
 
-const logExercisesParamsSchema = withAuthToken(z.object({
+const addLogParamsSchema = withAuthToken(z.object({
   session_detail_id: z.string().describe('Existing workout session_detail_id to log exercises sets to.'),
   exercise_id: z.number().int().describe('Exercise ID to log sets for.'),
   exercise_type: z.string().describe('Type of exercise: strength or cardio.'),
-  set_detail: z.array(
+  planned_detail: z.array(
     z.object({
-      set_id: z.string().describe('Existing workout set_id to log.'),
-      actual_rep: z.number().int().describe('Actual number of reps performed.'),
+      planned_rep: z.number().int().describe('Planned number of reps for the exercise.'),
       weight_kg: z.number().optional().describe('Optional weight in kg used for the exercise.'),
       duration: z.number().int().optional().describe('Optional duration in minutes (for time-based exercises).'),
-      status: z.string().default('Complete').describe('Status of the exercise is Complete'),
+      status: z.string().default('In Progress').describe('Status of the exercise is "In Progress"'),
       notes: z.string().optional().describe('Optional notes about performance, RPE, etc.'),
-    })).nonempty().describe('List of exercise sets to log to the session.'),
-  }));
+    })
+  ).nonempty().describe('List of exercises to log to the session.'),
+}));
 
-async function logExercises(params: z.infer<typeof logExercisesParamsSchema>,): Promise<{set_id?: number;error?: string; message: string }> {
+async function addLogExercises(params: z.infer<typeof addLogParamsSchema>,): Promise<{set_ids?: number[] ;error?: string; message: string }> {
   const { authToken, rest } = extractAuthToken(params);
   const token = getAuthToken(authToken);
   const res = await fetch(`${API_BASE}/ai/workout-sessions/logs`, {
-    method: 'PUT',
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
@@ -32,18 +32,19 @@ async function logExercises(params: z.infer<typeof logExercisesParamsSchema>,): 
   const data = await res.json();
   if (!res.ok) {
     return {
-      error: data.error ?? 'Failed to log exercises.',
-      message: 'Failed to log exercises.',
+      error: data.error ?? 'Failed  to create log.',
+      message: 'Failed to create log.',
     };
   }
   return {
+    set_ids: data.set_ids ?? [],
     message: data.message ?? 'Exercises logged successfully.',
   };
 }
-export const logExercisesTool = new FunctionTool({
-  name: 'logExercises',
+export const addLogExercisesTool = new FunctionTool({
+  name: 'addLogExercises',
   description:
-    'Logs completed sets for an existing workout session (POST /workout-sessions with session_detail_id + sets).',
-  parameters: logExercisesParamsSchema,
-  execute: logExercises,
+    'Logs planned sets for an existing workout session (POST /workout-sessions with session_detail_id + sets).',
+  parameters: addLogParamsSchema,
+  execute: addLogExercises,
 });

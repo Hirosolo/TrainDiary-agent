@@ -3,18 +3,16 @@ import {FunctionTool } from '@google/adk';
 import { withAuthToken, getAuthToken, extractAuthToken } from '../../auth';
 import { API_BASE } from '../../config';
 
-const user_id = 5;
 
-// Add authToken to schemas as an optional string
 const getExercisesofSessionParamsSchema = withAuthToken(z.object({
-  session_id: z.number().int().describe('The ID of the workout session to retrieve exercises for.'),
+  session_id: z.number().int().describe('The IDs of the workout sessions to retrieve exercises for.'),
 }));
 
-async function getExercisesofSession(params: z.infer<typeof getExercisesofSessionParamsSchema>,): Promise<{ exercises?: any[]; message: string; error?: string }> {
+async function getExercisesofSession(params: z.infer<typeof getExercisesofSessionParamsSchema>): Promise<{ session_details?: any[]; message: string; error?: string }> {
   const { authToken, rest } = extractAuthToken(params);
   const token = getAuthToken(authToken);
-  console.log('getExercisesofSession params:', rest);
-  const res = await fetch(`${API_BASE}/api/workouts/${rest.session_id}/exercises`, {
+
+  const res = await fetch(`${API_BASE}/ai/workout-sessions/exercises/${rest.session_id}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -22,26 +20,30 @@ async function getExercisesofSession(params: z.infer<typeof getExercisesofSessio
     },
   });
 
-  console.log('getExercisesofSession response status:', res.status);
   const data = await res.json();
-  console.log('getExercisesofSession response data:', data);
+
   if (!res.ok) {
     return {
-      error: (data.data && data.data.error) || data.error || 'Failed to get exercises for session.',
+      error: data.error || 'Failed to get exercises for session.',
       message: 'Failed to get exercises for session.',
     };
   }
+
   return {
     message: data.message ?? 'Exercises retrieved successfully.',
-    exercises: data.data.map((session: any) => ({
-        session_id: session.session_id,
-        user_id: session.user_id,
-        scheduled_date: session.scheduled_date,
-        status: session.status,
-        notes: session.notes,
-        exercises: session.exercises ?? []
-  }))
-}};
+    session_details: (data.data || []).map((item: any) => ({
+      session_id: item.session_id,
+      // Combining detail_id and exercise info into one flat object
+      session_detail: {
+        session_detail_id: item.session_detail_id, 
+        exercise_id: item.exercise.exercise_id,
+        exercise_type: item.exercise.exercise_type,
+      }
+    }))
+  };
+}
+
+
 
 export const getWorkoutExercisesofSessionTool = new FunctionTool({
   name: 'getWorkoutExercises',

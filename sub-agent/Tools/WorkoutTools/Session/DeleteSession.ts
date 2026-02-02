@@ -9,36 +9,31 @@ const deleteSessionParamsSchema = withAuthToken(z.object({
   session_ids: z.array(z.number().int()).describe('An array of session IDs to delete.'),
 }));
 
-async function deleteSessions(params: z.infer<typeof deleteSessionParamsSchema>): Promise<{ message: string; results?: any[]; error?: string }> {
+async function deleteSessions(params: z.infer<typeof deleteSessionParamsSchema>): Promise<{ message: string; error?: string }> {
   const { authToken, rest } = extractAuthToken(params);
   const token = getAuthToken(authToken);
   
-  const results = [];
-  const ids = rest.session_ids;
+  const res = await fetch(`${API_BASE}/ai/workout-sessions`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(rest),
+  });
 
-  // Loop through each ID and perform the delete
-  for (const id of ids) {
-    try {
-      const res = await fetch(`${API_BASE}/ai/workout-sessions/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+  const data = await res.json();
 
-      const data = await res.json();
-      results.push({ id, status: res.ok ? 'success' : 'failed', message: data.message });
-    } catch (err) {
-      results.push({ id, status: 'error', message: 'Network or System error' });
-    }
+  if (!res.ok) {
+    return {
+      error: data.data.error || 'Failed to delete sessions.',
+      message: 'An error occurred during bulk deletion.',
+    };
   }
 
-  const successCount = results.filter(r => r.status === 'success').length;
-
+  // Return a single message since the API handled the batch
   return {
-    message: `Processed ${ids.length} deletions. ${successCount} successful.`,
-    results: results // Returns details of which ones succeeded or failed
+    message: data.message ?? `Successfully processed deletion request for ${rest.session_ids?.length || 0} sessions.`,
   };
 }
 export const deleteWorkoutSessionTool = new FunctionTool({

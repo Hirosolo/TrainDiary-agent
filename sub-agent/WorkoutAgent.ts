@@ -4,12 +4,12 @@ import { deleteWorkoutSessionTool } from './Tools/WorkoutTools/Session/DeleteSes
 import { getWorkoutSessionTool } from './Tools/WorkoutTools/Session/GetSession';
 import { updateWorkoutSessionStatusTool } from './Tools/WorkoutTools/Session/UpdateSession';
 import { addExercisesToSessionTool } from './Tools/WorkoutTools/SessionDetails/AddExercisesToSession';
-import { deleteExercisesToSessionTool } from './Tools/WorkoutTools/SessionDetails/DeleteExercisesFromSession';
+import { deleteExercisesFromSessionTool } from './Tools/WorkoutTools/SessionDetails/DeleteExerciseinSession';
 import { getWorkoutExercisesofSessionTool } from './Tools/WorkoutTools/SessionDetails/GetExercisesofSession';
 import { searchExerciseTool } from './Tools/WorkoutTools/SearchExercises';
 import { deleteLogTool } from './Tools/WorkoutTools/ExerciseDetails/DeleteLog';
 import { logExercisesTool } from './Tools/WorkoutTools/ExerciseDetails/LogExercises';
-import { updateExercisesTool } from './Tools/WorkoutTools/ExerciseDetails/UpdateExercises';
+import { addLogExercisesTool } from './Tools/WorkoutTools/ExerciseDetails/AddLog';
 
 
 export const WorkoutAgent = new LlmAgent({
@@ -38,14 +38,29 @@ If the user requests to delete a session:
 - Confirm deletion to the user: "Your workout session has been deleted."
 
 1.3. Update session status
-- Use "GetExercises
-### 2. EXERCISE SEARCH & FUZZY MATCHING
+- Use "GetWorkoutExercisesofSessionTool" to retrieve exercises in a session.
+- If all exercises are logged as complete, call 'updateWorkoutSessionStatusTool' to mark the session as "Complete".
+- Inform the user: "Your session is now marked as complete."
+
+1.4. Retrieve session details
+- When the user inquires about their session, call 'getWorkoutSessionTool' to fetch session details.
+- Summarize the session: date, exercises planned/completed, and any notes.
+- Provide encouragement based on their progress.
+
+### 2. MANAGE SESSION DETAILS
+2.1. SEARCH EXERCISES 
+EXERCISE SEARCH & FUZZY MATCHING
 When a user mentions an exercise name:
-- **Call 'searchExerciseTool':**
+- **Call 'searchWorkoutExerciseTool':**
   - **Exact Match Priority:** If the search returns an exact match (e.g., User says "Barbell Bench Press" and both "Barbell Bench Press" and "Incline Barbell Bench Press" exist), choose the exact match "Barbell Bench Press" immediately. Do NOT ask for clarification if one result matches the user's string perfectly.
   - **Clarification:** Only if there is no exact match and multiple partial matches exist, ask the user to clarify.
+2.2. ADD EXERCISES TO SESSION
+After session is confirmed/created and exercises are identified:
+- Call 'addExercisesToSessionTool' with the 'session_id' and list of 'exercise_id's to add them to the session.
+- Confirm
 
-### 3. LOGGING DONE EXERCISES (The "Execution" Flow)
+### 3. MANAGE EXERCISES LOG (The "Execution" Flow)
+
 If the user reports an exercise they HAVE COMPLETED:
 - **Type Differentiation:**
   - **Cardio:** Duration is REQUIRED. If missing, ask for it. Set reps/sets to 0.
@@ -72,10 +87,11 @@ If the user wants to PLAN a workout for later:
     getWorkoutSessionTool,
     updateWorkoutSessionStatusTool,
     addExercisesToSessionTool,
-    deleteExercisesToSessionTool,
+    deleteExercisesFromSessionTool,
+    getWorkoutExercisesofSessionTool,
     searchExerciseTool,
     deleteLogTool,
     logExercisesTool,
-    updateExercisesTool,
+    addLogExercisesTool,
   ],
 });
