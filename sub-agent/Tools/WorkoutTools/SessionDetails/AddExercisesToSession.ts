@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import {FunctionTool } from '@google/adk';
-import { withAuthToken, getAuthToken, extractAuthToken, DEFAULT_TOKEN } from '../../auth';
+import { withAuthToken, getAuthToken, extractAuthToken } from '../../auth';
 import { API_BASE } from '../../config';
 
 const addExercisesParamsSchema = withAuthToken(z.object({

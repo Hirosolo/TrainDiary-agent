@@ -3,11 +3,9 @@ import {FunctionTool } from '@google/adk';
 import { withAuthToken, getAuthToken, extractAuthToken } from '../../auth';
 import { API_BASE } from '../../config';
 
-const user_id = 5;
 
 // Add authToken to schemas as an optional string
 const createSessionParamsSchema = withAuthToken(z.object({
-  userId: z.number().int().default(user_id).describe('The ID of the user creating the workout session.'),
   scheduled_date: z.string().default(new Date().toISOString().split('T')[0]).describe('ISO date string YYYY-MM-DD for the workout session.'),
   type: z.string().optional().describe('Optional type of workout session, e.g., "strength", "cardio".'),
   notes: z.string().optional().describe('Optional notes for the workout session.'),
@@ -17,7 +15,7 @@ async function createWorkoutSession(params: z.infer<typeof createSessionParamsSc
   const { authToken, rest } = extractAuthToken(params);
   const token = getAuthToken(authToken);
   console.log('createWorkoutSession params:', rest);
-  const res = await fetch(`${API_BASE}/api/workouts`, {
+  const res = await fetch(`${API_BASE}/ai/workout-sessions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -32,7 +30,8 @@ async function createWorkoutSession(params: z.infer<typeof createSessionParamsSc
   if (!res.ok) {
     return {
       error: (data.data && data.data.error) || data.error || 'Failed to create session.',
-      message: 'Failed to create session.',
+      message: data.message || 'Failed to create session.',
+      session_id : data.data?.session_id,
     };
   }
 
@@ -45,7 +44,7 @@ async function createWorkoutSession(params: z.infer<typeof createSessionParamsSc
 export const createWorkoutSessionTool = new FunctionTool({
   name: 'createWorkoutSession',
   description:
-    'Creates a new workout session for a user (POST /workout-sessions).',
+    'Creates a new workout session for a user (POST /ai/workout-sessions).',
   parameters: createSessionParamsSchema,
   execute: createWorkoutSession,
 });

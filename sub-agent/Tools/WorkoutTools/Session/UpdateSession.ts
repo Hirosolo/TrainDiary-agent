@@ -1,41 +1,56 @@
 import { z } from 'zod';
 import { FunctionTool } from '@google/adk';
 import { withAuthToken, getAuthToken, extractAuthToken } from '../../auth';
+import { getWorkoutExercisesofSessionTool } from '../SessionDetails/GetExercisesofSession';
 import { API_BASE } from '../../config'; 
 
 const updateSessionStatusParamsSchema = withAuthToken(z.object({
-  session_id: z.string().describe('Existing workout session_id to update.'),
-  userId: z.number().int().describe('The ID of the user updating the workout session for authorization.'),
-  status: z.string().describe('New status of the workout session (e.g., "complete", "incomplete").'),
-  note: z.string().optional().describe('Optional note to add to the workout session.'),
+  session_ids: z.array(z.number().int()).describe('An array of session IDs to update.'),
 }));
 
-async function updateSessionStatus(params: z.infer<typeof updateSessionStatusParamsSchema>,): Promise<{error?: string; message: string }> {
+async function updateSessionStatus(params: z.infer<typeof updateSessionStatusParamsSchema>): Promise<{ error?: string; message: string; details?: any[] }> {
     const { authToken, rest } = extractAuthToken(params);   
     const token = getAuthToken(authToken);
-    const res = await fetch(`${API_BASE}/api/workouts`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(rest),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      return {
-        error: data.error ?? 'Failed to update session status.',
-        message: 'Failed to update session status.',
-      };
-    }
+    const ids = rest.session_ids;
+
+    // Use Promise.all to handle multiple requests in parallel
+    const results = await Promise.all(ids.map(async (id) => {
+        try {
+            const res = await fetch(`${API_BASE}/ai/workout-sessions/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                // If the API logic handles everything, we send an empty body or minimal payload
+                body: JSON.stringify({ trigger_update: true }) 
+            });
+
+            const data = await res.json();
+            
+            return {
+                id,
+                status: res.ok ? 'success' : 'failed',
+                message: data.message || (res.ok ? 'Updated' : 'Failed')
+            };
+        } catch (err) {
+            return { id, status: 'error', message: 'Network error' };
+        }
+    }));
+
+    const failure = results.find(r => r.status !== 'success');
+    
     return {
-      message: data.message ?? 'Session status updated successfully.',
+        message: `Processed ${ids.length} sessions.`,
+        details: results,
+        error: failure ? "One or more updates failed." : undefined
     };
-    }
-export const updateSessionStatusTool = new FunctionTool({
-  name: 'updateSessionStatus',  
+}
+
+export const updateWorkoutSessionStatusTool = new FunctionTool({
+  name: 'updateWorkoutSessionStatus',  
   description:
-    'Updates the status and optional note of an existing workout session (PUT /workout-sessions).',
+    'Updates the status and optional note of an existing workout session (PUT /ai/workout-sessions).',
   parameters: updateSessionStatusParamsSchema,
   execute: updateSessionStatus,
 });

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import {FunctionTool } from '@google/adk';
-import { withAuthToken, getAuthToken, extractAuthToken } from '../../auth';
-import { API_BASE } from '../../config';
+import { withAuthToken, getAuthToken, extractAuthToken } from '../auth';
+import { API_BASE } from '../config';
 
 const searchExerciseParamsSchema = withAuthToken(z.object({
   name: z.string().describe('Partial or full name of the exercise to search for.'),
