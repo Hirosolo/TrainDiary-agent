@@ -6,7 +6,7 @@ import { API_BASE } from '../../config';
 const deleteExercisesParamsSchema = withAuthToken(z.object({
   session_detail_id: z.array(z.number().int()).describe('Existing workout session_detail_id of exercises to delete.'),
 }));
-async function deleteExercisesFromSession(params: z.infer<typeof deleteExercisesParamsSchema>): Promise<{ session_detail_ids?: number[]; error?: string; message: string }> {
+async function deleteExercisesFromSession(params: z.infer<typeof deleteExercisesParamsSchema>): Promise<{ error?: string; message: string }> {
   const { authToken, rest } = extractAuthToken(params);
   const token = getAuthToken(authToken);
 
@@ -35,7 +35,7 @@ async function deleteExercisesFromSession(params: z.infer<typeof deleteExercises
 export const deleteExercisesFromSessionTool = new FunctionTool({
   name: 'deleteExercisesFromSession',
   description:
-    'Deletes one or more exercises from an existing workout session (DELETE /session-exercises).',
+    'Deletes one or more exercises from an existing workout session (DELETE /session-details).',
   parameters: deleteExercisesParamsSchema,
   execute: deleteExercisesFromSession,
 });
